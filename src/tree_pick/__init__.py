@@ -1,12 +1,18 @@
 ''' tree_pick.py '''
   
 from __future__ import annotations
+
 import curses
-from dataclasses import dataclass, field
 import enum
+from dataclasses import dataclass, field
 from typing import Callable, Dict, List, Optional
+
 from anytree import Node, RenderTree
-from tree_pick.anytree_utils import add_indices, find_by_index, count_leaves, count_nodes, get_descendants, get_leaves_only
+from click import MissingParameter
+
+from tree_pick.anytree_utils import (add_indices, count_leaves, count_nodes,
+                                     find_by_index, get_descendants,
+                                     get_leaves_only)
 
 __all__ = ['TreePicker', 'tree_pick']
 
@@ -61,13 +67,14 @@ class TreePicker:
     scroll_top: int = field(init=False, default=0)
 
     def __post_init__(self):
-        if (type(self.options) == RenderTree and count_nodes(self.options.node) == 0) or (type(self.options) == list and len(self.options) == 0):
+        # Check for correct number of elements
+        if (isinstance(self.options, RenderTree) and count_nodes(self.options.node) == 0) or (isinstance(self.options, list) and len(self.options) == 0):
             raise ValueError('options should not be an empty list')
 
         if not self.multiselect and not self.singleselect_output_include_children and self.output_leaves_only:
             raise ValueError('To output only leaves on singleselect mode, singleselect_output_include_children MUST be True')
 
-        optnr = (lambda : count_leaves(self.options.node) if type(self.options) == RenderTree else len(self.options))()
+        optnr = (lambda : count_leaves(self.options.node) if isinstance(self.options, RenderTree) else len(self.options))()
 
         if self.default_index >= optnr:
             raise ValueError('default_index should be less than the length of options')
@@ -75,9 +82,12 @@ class TreePicker:
         if self.multiselect and self.min_selection_count > optnr:
             raise ValueError('min_selection_count is bigger than the available options, you will not be able to make any selection')
 
-        if self.options_map_func is not None and not callable(self.options_map_func):
-            raise ValueError('options_map_func must be a callable function')
-        elif self.options_map_func is not None and callable(self.options_map_func) and type(self.options) == list:
+        # Check for correct options_map_func and build tree
+        if self.options_map_func is None and isinstance(self.options, list):
+            raise MissingParameter('options_map_func that maps list items to Node objects is required when passing options of type list')
+        elif self.options_map_func is not None and not callable(self.options_map_func):
+            raise TypeError('options_map_func must be a callable function')
+        elif self.options_map_func is not None and callable(self.options_map_func) and isinstance(self.options, list):
             opts = [self.options_map_func(opt) for opt in self.options]
             if len(opts) > 1:
                 root = Node("Select all", children=opts)
@@ -86,16 +96,18 @@ class TreePicker:
             self.options = RenderTree(root)
         add_indices(self.options)
         
-        if type(self.options) == RenderTree and self.root_name is not None:
+        # Rename root node
+        if isinstance(self.options, RenderTree) and self.root_name is not None:
             self.options.node.name = self.root_name
 
+        # Define output format
         if isinstance(self.output_format, str):
             try:
                 self.output_format = OutputMode[self.output_format].value
             except:
                 raise ValueError('Invalid output_format property. Must be "nodeindex", "nameindex", "nodeonly" or "nameonly"')
         else:
-            raise ValueError('Invalid output_format property type. Must be string ("nodeindex", "nameindex", "nodeonly" or "nameonly")')
+            raise TypeError('Invalid output_format property type. Must be string ("nodeindex", "nameindex", "nodeonly" or "nameonly")')
 
         self.index = self.default_index
 
@@ -354,12 +366,12 @@ def tree_pick(*args, **kwargs):
 
       >>> from tree_pick import tree_pick
       >>> from anytree import Node, RenderTree
-      >>>
+      
       >>> child = Node("Child")
       >>> root = Node("Root", children=[child])
       >>> options = RenderTree(root)
       >>> title = 'Please choose an option: '
-      >>>
+      
       >>> option, index = pick(options, title)
     """
     picker = TreePicker(*args, **kwargs)
