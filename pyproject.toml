@@ -1,18 +1,19 @@
 [tool.poetry]
 name = "tree-pick"
-version = "0.0.1"
+version = "1.0.0"
 description = "Based on wong2's pick, pick an option from a tree structure in the terminal with a simple GUI"
-authors = ["Ana <notanemail@email.com>", "wong2 <wonderfuly@gmail.com>"]
+authors = ["Ana <anafvana@gmail.com>", "wong2 <wonderfuly@gmail.com>"]
 license = "MIT"
 readme = "README.rst"
-repository = "https://github.com/wong2/pick"
-homepage = "https://github.com/wong2/pick"
+repository = "https://github.com/anafvana/tree_pick"
+homepage = "https://github.com/anafvana/tree_pick"
 keywords = ["terminal", "gui"]
 
 [tool.poetry.dependencies]
-python = ">=3.6"
+python = ">=3.9"
 windows-curses = {version = "^2.2.0", platform = "win32"}
 dataclasses = { version = "^0.8", python = "~3.6" }
+anytree = {version = "^2.8"}
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"
