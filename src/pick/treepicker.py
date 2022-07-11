@@ -3,7 +3,7 @@ import curses
 from dataclasses import dataclass, field
 from typing import Callable, Dict, List, Optional
 from anytree import Node, RenderTree, find
-from anytree_utils import add_indices, find_by_index, count_leaves, count_nodes
+from anytree_utils import add_indices, find_by_index, count_leaves, count_nodes, get_descendants, get_leaves_only
 
 __all__ = ['Picker', 'pick']
 
@@ -18,11 +18,13 @@ KEYS_SELECT = (curses.KEY_RIGHT, ord(' '))
 class TreePicker:
     """The :class:`TreePicker <TreePicker>` object
 
-    :param options: a list of options to choose from
+    :param options: a RenderTree (anytree) or a list of options to choose from
     :param title: (optional) a title above options list
-    :param multiselect: (optional) if true its possible to select multiple values by hitting SPACE, defaults to False
+    :param multiselect: (optional) if true its possible to select multiple values by hitting SPACE; defaults to False
+    :param singleselect_output_include_children: (optional) if true, output will include all children of the selected node, as well as the node itself; defaults to False
+    :param output_leaves_only: (optional) if true, only leaf nodes will be returned; for singleselect mode, singleselect_output_include_children MUST be True; defaults to False
     :param indicator: (optional) custom the selection indicator
-    :param indicator_parentheses: (optional) include/remove parentheses around selection indicator, defaults to True
+    :param indicator_parentheses: (optional) include/remove parentheses around selection indicator; defaults to True
     :param default_index: (optional) set this if the default selected option is not the first one
     :param options_map_func: (optional) a mapping function to pass each option through before displaying
     """
@@ -34,6 +36,8 @@ class TreePicker:
     default_index: int = 0
     multiselect: bool = False
     min_selection_count: int = 0
+    singleselect_output_include_children: bool = False
+    output_leaves_only: bool = False
     options_map_func: Optional[Callable[[Dict], Node]] = None
     all_selected: List[str] = field(init=False, default_factory=list)
     custom_handlers: Dict[str, Callable[["TreePicker"], str]] = field(
@@ -45,6 +49,9 @@ class TreePicker:
     def __post_init__(self):
         if (type(self.options) == RenderTree and count_nodes(self.options.node) == 0) or (type(self.options) == list and len(self.options) == 0):
             raise ValueError('options should not be an empty list')
+
+        if not self.multiselect and not self.singleselect_output_include_children and self.output_leaves_only:
+            raise ValueError('To output only leaves on singleselect mode, singleselect_output_include_children MUST be True')
 
         optnr = (lambda : count_leaves(self.options.node) if type(self.options) == RenderTree else len(self.options))()
 
@@ -118,9 +125,6 @@ class TreePicker:
         self.check_children(node)
         self.check_ancestors(node)
 
-    # def mark_parent_index(self):
-
-
     def remove_relatives_index(self):
         node = find_by_index(self.options.node, self.index)
         self.uncheck_children(node)
@@ -141,11 +145,22 @@ class TreePicker:
         """
         if self.multiselect:
             return_tuples = []
-            for selected in self.all_selected:
-                return_tuples.append((find_by_index(self.options.node, selected), selected))
+            if self.output_leaves_only:
+                for selected in self.all_selected:
+                    node = find_by_index(self.options.node, selected)
+                    return_tuples.extend([leaf for leaf in get_leaves_only(node) if leaf not in return_tuples])
+            else: 
+                for selected in self.all_selected:
+                    return_tuples.append((find_by_index(self.options.node, selected), selected))
             return return_tuples
         else:
-            return self.options[self.index], self.index
+            node = find_by_index(self.options.node, self.index)
+            if self.singleselect_output_include_children:
+                if self.output_leaves_only:
+                    return get_leaves_only(node)
+                return get_descendants(node)
+            else:
+                return node, self.index
 
     def get_title_lines(self):
         if self.title:
