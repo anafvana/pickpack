@@ -5,7 +5,7 @@ from typing import Callable, Dict, List, Optional
 from anytree import Node, RenderTree, find
 from anytree_utils import add_indices, find_by_index, count_leaves, count_nodes, get_descendants, get_leaves_only
 
-__all__ = ['Picker', 'pick']
+__all__ = ['TreePicker', 'tree_pick']
 
 
 KEYS_ENTER = (curses.KEY_ENTER, ord('\n'), ord('\r'))
