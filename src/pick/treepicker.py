@@ -20,6 +20,7 @@ class TreePicker:
 
     :param options: a RenderTree (anytree) or a list of options to choose from
     :param title: (optional) a title above options list
+    :param root_name: (optional) name of root ("select all") node; defaults to root node's value
     :param multiselect: (optional) if true its possible to select multiple values by hitting SPACE; defaults to False
     :param singleselect_output_include_children: (optional) if true, output will include all children of the selected node, as well as the node itself; defaults to False
     :param output_leaves_only: (optional) if true, only leaf nodes will be returned; for singleselect mode, singleselect_output_include_children MUST be True; defaults to False
@@ -31,6 +32,7 @@ class TreePicker:
 
     options: RenderTree|list
     title: Optional[str] = None
+    root_name: Optional[str] = None
     indicator: str = "*"
     indicator_parentheses: bool = True
     default_index: int = 0
@@ -72,6 +74,9 @@ class TreePicker:
             self.options = RenderTree(root)
         add_indices(self.options)
         
+        if type(self.options) == RenderTree and self.root_name is not None:
+            self.options.node.name = self.root_name
+
         self.index = self.default_index
 
     def register_custom_handler(self, key, func):
