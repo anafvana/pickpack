@@ -1,3 +1,5 @@
+''' anytree_utils.py '''
+
 from anytree import Node, RenderTree, find
 from typing import Optional
 

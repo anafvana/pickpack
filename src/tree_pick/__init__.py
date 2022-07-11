@@ -1,3 +1,6 @@
+''' tree_pick.py '''
+  
+
 from __future__ import annotations
 import curses
 from dataclasses import dataclass, field
@@ -263,13 +266,18 @@ class TreePicker:
         return curses.wrapper(self._start)
 
 def tree_pick(*args, **kwargs):
-    """Construct and start a :class:`Picker <Picker>`.
+    """Construct and start a :class:`TreePicker <TreePicker>`.
 
     Usage::
 
-      >>> from pick import pick
+      >>> from tree_pick import tree_pick
+      >>> from anytree import Node, RenderTree
+      >>>
+      >>> child = Node("Child")
+      >>> root = Node("Root", children=[child])
+      >>> options = RenderTree(root)
       >>> title = 'Please choose an option: '
-      >>> options = ['option1', 'option2', 'option3']
+      >>>
       >>> option, index = pick(options, title)
     """
     picker = TreePicker(*args, **kwargs)

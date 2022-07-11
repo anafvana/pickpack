@@ -1,8 +1,8 @@
 [tool.poetry]
-name = "pick"
-version = "1.2.0"
-description = "Pick an option in the terminal with a simple GUI"
-authors = ["wong2 <wonderfuly@gmail.com>"]
+name = "tree-pick"
+version = "0.0.1"
+description = "Based on wong2's pick, pick an option from a tree structure in the terminal with a simple GUI"
+authors = ["Ana <notanemail@email.com>", "wong2 <wonderfuly@gmail.com>"]
 license = "MIT"
 readme = "README.rst"
 repository = "https://github.com/wong2/pick"
