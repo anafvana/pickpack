@@ -34,7 +34,7 @@ class TreePicker:
     :param multiselect: (optional) if true its possible to select multiple values by hitting SPACE; defaults to False
     :param singleselect_output_include_children: (optional) if true, output will include all children of the selected node, as well as the node itself; defaults to False
     :param output_leaves_only: (optional) if true, only leaf nodes will be returned; for singleselect mode, singleselect_output_include_children MUST be True; defaults to False
-    :param output_format: (optional) allows for customising output format. 0 or "nodeindex" = [(Node('name'), index)]; 1 or "nameindex" = [('name', index)]; 2 or "nodeonly" = [Node('name')]; 3 or "nameonly" = ['name']; default is 0
+    :param output_format: (optional) allows for customising output format. "nodeindex" = [(Node('name'), index)]; "nameindex" = [('name', index)]; "nodeonly" = [Node('name')]; "nameonly" = ['name']; default is "nodeindex"
     :param indicator: (optional) custom the selection indicator
     :param indicator_parentheses: (optional) include/remove parentheses around selection indicator; defaults to True
     :param default_index: (optional) set this if the default selected option is not the first one
@@ -174,7 +174,10 @@ class TreePicker:
                     return_tuples.extend([leaf for leaf in get_leaves_only(node) if leaf not in return_tuples])
             else: 
                 for selected in self.all_selected:
-                    return_tuples.append(find_by_index(self.options.node, selected).name)
+                    if nameonly:
+                        return_tuples.append(find_by_index(self.options.node, selected).name)
+                    else:
+                        return_tuples.append(find_by_index(self.options.node, selected))
             return return_tuples
         else:
             node = find_by_index(self.options.node, self.index)
@@ -208,9 +211,9 @@ class TreePicker:
                 for selected in self.all_selected:
                     node = find_by_index(self.options.node, selected)
                     if nameonly:
-                        return_tuples.extend([(leaf.name, leaf.index) for leaf in get_leaves_only(node) if leaf.name not in return_tuples])
+                        return_tuples.extend([(leaf.name, leaf.index) for leaf in get_leaves_only(node) if (leaf.name, leaf.index) not in return_tuples])
                     else:
-                        return_tuples.extend([(leaf, selected.index) for leaf in get_leaves_only(node) if leaf not in return_tuples])
+                        return_tuples.extend([(leaf, leaf.index) for leaf in get_leaves_only(node) if (leaf, leaf.index) not in return_tuples])
 
             else: 
                 if nameonly:
