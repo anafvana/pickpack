@@ -1,11 +1,11 @@
 ''' tree_pick.py '''
   
-
 from __future__ import annotations
 import curses
 from dataclasses import dataclass, field
+import enum
 from typing import Callable, Dict, List, Optional
-from anytree import Node, RenderTree, find
+from anytree import Node, RenderTree
 from anytree_utils import add_indices, find_by_index, count_leaves, count_nodes, get_descendants, get_leaves_only
 
 __all__ = ['TreePicker', 'tree_pick']
@@ -15,6 +15,13 @@ KEYS_ENTER = (curses.KEY_ENTER, ord('\n'), ord('\r'))
 KEYS_UP = (curses.KEY_UP, ord('k'))
 KEYS_DOWN = (curses.KEY_DOWN, ord('j'))
 KEYS_SELECT = (curses.KEY_RIGHT, ord(' '))
+
+
+class OutputMode(enum.Enum):
+    nodeindex = 0
+    nameindex = 1
+    nodeonly = 2
+    nameonly = 3
 
 
 @dataclass
@@ -27,6 +34,7 @@ class TreePicker:
     :param multiselect: (optional) if true its possible to select multiple values by hitting SPACE; defaults to False
     :param singleselect_output_include_children: (optional) if true, output will include all children of the selected node, as well as the node itself; defaults to False
     :param output_leaves_only: (optional) if true, only leaf nodes will be returned; for singleselect mode, singleselect_output_include_children MUST be True; defaults to False
+    :param output_format: (optional) allows for customising output format. 0 or "nodeindex" = [(Node('name'), index)]; 1 or "nameindex" = [('name', index)]; 2 or "nodeonly" = [Node('name')]; 3 or "nameonly" = ['name']; default is 0
     :param indicator: (optional) custom the selection indicator
     :param indicator_parentheses: (optional) include/remove parentheses around selection indicator; defaults to True
     :param default_index: (optional) set this if the default selected option is not the first one
@@ -43,6 +51,7 @@ class TreePicker:
     min_selection_count: int = 0
     singleselect_output_include_children: bool = False
     output_leaves_only: bool = False
+    output_format: int|str = "nodeindex"
     options_map_func: Optional[Callable[[Dict], Node]] = None
     all_selected: List[str] = field(init=False, default_factory=list)
     custom_handlers: Dict[str, Callable[["TreePicker"], str]] = field(
@@ -79,6 +88,14 @@ class TreePicker:
         
         if type(self.options) == RenderTree and self.root_name is not None:
             self.options.node.name = self.root_name
+
+        if isinstance(self.output_format, str):
+            try:
+                self.output_format = OutputMode[self.output_format].value
+            except:
+                raise ValueError('Invalid output_format property. Must be "nodeindex", "nameindex", "nodeonly" or "nameonly"')
+        else:
+            raise ValueError('Invalid output_format property type. Must be string ("nodeindex", "nameindex", "nodeonly" or "nameonly")')
 
         self.index = self.default_index
 
@@ -147,10 +164,8 @@ class TreePicker:
                 self.all_selected.append(self.index)
                 self.add_relatives_index()
 
-    def get_selected(self):
-        """return the current selected option as a tuple: (option, index)
-           or as a list of tuples (in case multiselect==True)
-        """
+    def get_selected_noindex(self):
+        nameonly = bool(self.output_format - 2)
         if self.multiselect:
             return_tuples = []
             if self.output_leaves_only:
@@ -159,16 +174,80 @@ class TreePicker:
                     return_tuples.extend([leaf for leaf in get_leaves_only(node) if leaf not in return_tuples])
             else: 
                 for selected in self.all_selected:
-                    return_tuples.append((find_by_index(self.options.node, selected), selected))
+                    return_tuples.append(find_by_index(self.options.node, selected).name)
+            return return_tuples
+        else:
+            node = find_by_index(self.options.node, self.index)
+            if self.output_leaves_only:
+                if nameonly:
+                    return [leaf.name for leaf in get_leaves_only(node)]
+                else:
+                    return get_leaves_only(node)
+            else:
+                if self.singleselect_output_include_children:
+                    descendants = get_descendants(node)
+                    if nameonly:
+                        return [node.name for node in descendants]
+                    else: 
+                        return descendants
+                else:
+                    if nameonly:
+                        return node.name
+                    else:
+                        return node
+    
+    def get_selected_withindex(self):
+        """return the current selected option as a tuple: (option, index)
+           or as a list of tuples (in case multiselect==True)
+        """
+        nameonly = bool(self.output_format)
+
+        if self.multiselect:
+            return_tuples = []
+            if self.output_leaves_only:
+                for selected in self.all_selected:
+                    node = find_by_index(self.options.node, selected)
+                    if nameonly:
+                        return_tuples.extend([(leaf.name, leaf.index) for leaf in get_leaves_only(node) if leaf.name not in return_tuples])
+                    else:
+                        return_tuples.extend([(leaf, selected.index) for leaf in get_leaves_only(node) if leaf not in return_tuples])
+
+            else: 
+                if nameonly:
+                    for selected in self.all_selected:
+                        return_tuples.append((find_by_index(self.options.node, selected).name, selected))
+                else:
+                    for selected in self.all_selected:
+                        return_tuples.append((find_by_index(self.options.node, selected), selected))
             return return_tuples
         else:
             node = find_by_index(self.options.node, self.index)
             if self.singleselect_output_include_children:
                 if self.output_leaves_only:
-                    return get_leaves_only(node)
-                return get_descendants(node)
+                    if nameonly:
+                        return [(leaf.name, leaf.index) for leaf in get_leaves_only(node)]
+                    else:
+                        return [(leaf, leaf.index) for leaf in get_leaves_only(node)]
+                else:
+                    descendants = get_descendants(node)
+                    if nameonly:
+                        return [(node.name, node.index) for node in descendants]
+                    else: 
+                        return [(node, node.index) for node in descendants]
             else:
-                return node, self.index
+                if nameonly:
+                    return node.name, self.index
+                else:
+                    return node, self.index
+
+    def get_selected(self):
+        """return the current selected option as a tuple: (option, index)
+           or as a list of tuples (in case multiselect==True)
+        """
+        if self.output_format == 0 or self.output_format == 1:
+            return self.get_selected_withindex()
+        elif self.output_format == 2 or self.output_format == 3:
+            return self.get_selected_noindex()
 
     def get_title_lines(self):
         if self.title:
