@@ -63,7 +63,7 @@ It was made with installation processes in mind, so that a user can select a par
     option, index = pickpack(options, title, multiselect=True, min_selection_count=1, output_format='nameindex')
     print(option, index)
 
-**outputs**::
+**outputs**:
 
     [('child1', 1), ('child2', 2)]
 
