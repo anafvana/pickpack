@@ -4,7 +4,7 @@ version = "1.0.0"
 description = "Based on wong2's pick, tree_pick is a terminal GUI which allows you to pick one or more options from a tree structure"
 authors = ["Ana <anafvana@gmail.com>", "wong2 <wonderfuly@gmail.com>"]
 license = "MIT"
-readme = "README.rst"
+readme = "README.md"
 repository = "https://github.com/anafvana/tree_pick"
 homepage = "https://github.com/anafvana/tree_pick"
 keywords = ["terminal", "gui", "pick", "tree"]
@@ -14,6 +14,7 @@ python = ">=3.9"
 windows-curses = {version = "^2.2.0", platform = "win32"}
 dataclasses = { version = "^0.8", python = "~3.6" }
 anytree = {version = "^2.8"}
+pytest = {version = "^6.2"}
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"
