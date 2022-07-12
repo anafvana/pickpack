@@ -1,5 +1,5 @@
-from tree_pick import tree_pick
 from anytree import Node, RenderTree
+from tree_pick import tree_pick
 
 title = 'Select:'
 children = [Node('foo.bar%s.baz'%x, index=x) for x in range(1, 71)]

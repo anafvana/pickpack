@@ -1,7 +1,9 @@
 ''' anytree_utils.py '''
 
-from anytree import Node, RenderTree, find
 from typing import Optional
+
+from anytree import Node, RenderTree, find
+
 
 # Add index property to tree nodes
 def add_indices(tree:RenderTree):

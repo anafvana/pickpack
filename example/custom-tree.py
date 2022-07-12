@@ -1,6 +1,8 @@
 import curses
-from tree_pick import TreePicker
+
 from anytree import Node, RenderTree
+from tree_pick import TreePicker
+
 
 def go_back(picker):
     return (None, -1)

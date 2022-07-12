@@ -1,13 +1,13 @@
 [tool.poetry]
-name = "tree-pick"
+name = "tree_pick"
 version = "1.0.0"
-description = "Based on wong2's pick, pick an option from a tree structure in the terminal with a simple GUI"
+description = "Based on wong2's pick, tree_pick is a terminal GUI which allows you to pick one or more options from a tree structure"
 authors = ["Ana <anafvana@gmail.com>", "wong2 <wonderfuly@gmail.com>"]
 license = "MIT"
 readme = "README.rst"
 repository = "https://github.com/anafvana/tree_pick"
 homepage = "https://github.com/anafvana/tree_pick"
-keywords = ["terminal", "gui"]
+keywords = ["terminal", "gui", "pick", "tree"]
 
 [tool.poetry.dependencies]
 python = ">=3.9"

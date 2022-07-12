@@ -1,5 +1,5 @@
-from tree_pick import tree_pick
 from anytree import Node, RenderTree
+from tree_pick import tree_pick
 
 title = 'Please choose your favorite programming language: '
 java = Node("Java")

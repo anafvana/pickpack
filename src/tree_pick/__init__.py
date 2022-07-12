@@ -11,8 +11,8 @@ from anytree import Node, RenderTree
 from click import MissingParameter
 
 from tree_pick.anytree_utils import (add_indices, count_leaves, count_nodes,
-                                     find_by_index, get_descendants,
-                                     get_leaves_only)
+                                    find_by_index, get_descendants,
+                                    get_leaves_only)
 
 __all__ = ['TreePicker', 'tree_pick']
 
@@ -372,7 +372,7 @@ def tree_pick(*args, **kwargs):
       >>> options = RenderTree(root)
       >>> title = 'Please choose an option: '
       
-      >>> option, index = pick(options, title)
+      >>> option, index = tree_pick(options, title)
     """
     picker = TreePicker(*args, **kwargs)
     return picker.start()

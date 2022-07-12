@@ -9,4 +9,4 @@ test:
 
 .PHONY=clean
 clean:
-	rm -fr build dist pick.egg-info
+	rm -fr build dist tree_pick.egg-info
