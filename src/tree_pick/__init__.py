@@ -8,11 +8,10 @@ from dataclasses import dataclass, field
 from typing import Callable, Dict, List, Optional
 
 from anytree import Node, RenderTree
-from click import MissingParameter
 
 from tree_pick.anytree_utils import (add_indices, count_leaves, count_nodes,
-                                    find_by_index, get_descendants,
-                                    get_leaves_only)
+                                     find_by_index, get_descendants,
+                                     get_leaves_only)
 
 __all__ = ['TreePicker', 'tree_pick']
 
@@ -84,7 +83,7 @@ class TreePicker:
 
         # Check for correct options_map_func and build tree
         if self.options_map_func is None and isinstance(self.options, list):
-            raise MissingParameter('options_map_func that maps list items to Node objects is required when passing options of type list')
+            raise Exception('options_map_func that maps list items to Node objects is required when passing options of type list')
         elif self.options_map_func is not None and not callable(self.options_map_func):
             raise TypeError('options_map_func must be a callable function')
         elif self.options_map_func is not None and callable(self.options_map_func) and isinstance(self.options, list):

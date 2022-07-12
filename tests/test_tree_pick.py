@@ -1,6 +1,5 @@
 import pytest
 from anytree import Node, RenderTree
-from click import MissingParameter
 from tree_pick import TreePicker
 
 
@@ -88,7 +87,7 @@ def test_list_no_func():
     title = "Please choose an option: "
     options = [{"label": "option1"}, {"label": "option2"}, {"label": "option3"}]
 
-    with pytest.raises(MissingParameter): picker = TreePicker(options, title, indicator="*")
+    with pytest.raises(Exception): picker = TreePicker(options, title, indicator="*")
     with pytest.raises(TypeError): picker = TreePicker(options, title, indicator="*", options_map_func="hello")
 
 def test_output_format():
