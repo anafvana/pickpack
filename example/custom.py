@@ -1,5 +1,11 @@
+import curses
+
 from anytree import Node, RenderTree
-from tree_pick import tree_pick
+from pickpack import PickPacker
+
+
+def go_back(picker):
+    return (None, -1)
 
 title = 'Please choose your favorite programming language: '
 java = Node("Java")
@@ -18,5 +24,8 @@ mul = Node("Multiparadigm", children=[js, py, php])
 root = Node("Select all", children=[fun, imp, oop, mul])
 
 options = RenderTree(root)
-option, index = tree_pick(options, title, indicator='=>', default_index=2)
+
+picker = PickPacker(options, title)
+picker.register_custom_handler(curses.KEY_LEFT, go_back)
+option, index = picker.start()
 print(option, index)

@@ -1,5 +1,5 @@
 from anytree import Node, RenderTree
-from tree_pick import tree_pick
+from pickpack import pickpack
 
 title = 'Please choose your favorite fruit: '
 options = [
@@ -15,5 +15,5 @@ def get_description_for_display(option):
     # format the option data for display
     return Node('{0} (grow on {1})'.format(option.get('name'), option.get('grow_on')))
 
-option, index = tree_pick(options, title, indicator='=>', options_map_func=get_description_for_display)
+option, index = pickpack(options, title, indicator='=>', options_map_func=get_description_for_display)
 print(option, index)

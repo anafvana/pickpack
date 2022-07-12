@@ -1,4 +1,4 @@
-''' tree_pick.py '''
+''' pickpack.py '''
   
 from __future__ import annotations
 
@@ -9,11 +9,11 @@ from typing import Callable, Dict, List, Optional
 
 from anytree import Node, RenderTree
 
-from tree_pick.anytree_utils import (add_indices, count_leaves, count_nodes,
-                                     find_by_index, get_descendants,
-                                     get_leaves_only)
+from pickpack.anytree_utils import (add_indices, count_leaves, count_nodes,
+                                    find_by_index, get_descendants,
+                                    get_leaves_only)
 
-__all__ = ['TreePicker', 'tree_pick']
+__all__ = ['PickPacker', 'pickpack']
 
 
 KEYS_ENTER = (curses.KEY_ENTER, ord('\n'), ord('\r'))
@@ -30,8 +30,8 @@ class OutputMode(enum.Enum):
 
 
 @dataclass
-class TreePicker:
-    """The :class:`TreePicker <TreePicker>` object
+class PickPacker:
+    """The :class:`PickPacker <PickPacker>` object
 
     :param options: a RenderTree (anytree) or a list of options to choose from
     :param title: (optional) a title above options list
@@ -59,7 +59,7 @@ class TreePicker:
     output_format: int|str = "nodeindex"
     options_map_func: Optional[Callable[[Dict], Node]] = None
     all_selected: List[str] = field(init=False, default_factory=list)
-    custom_handlers: Dict[str, Callable[["TreePicker"], str]] = field(
+    custom_handlers: Dict[str, Callable[["PickPacker"], str]] = field(
         init=False, default_factory=dict
     )
     index: int = field(init=False, default=0)
@@ -358,12 +358,12 @@ class TreePicker:
     def start(self):
         return curses.wrapper(self._start)
 
-def tree_pick(*args, **kwargs):
-    """Construct and start a :class:`TreePicker <TreePicker>`.
+def pickpack(*args, **kwargs):
+    """Construct and start a :class:`PickPacker <PickPacker>`.
 
     Usage::
 
-      >>> from tree_pick import tree_pick
+      >>> from pickpack import pickpack
       >>> from anytree import Node, RenderTree
       
       >>> child = Node("Child")
@@ -371,7 +371,7 @@ def tree_pick(*args, **kwargs):
       >>> options = RenderTree(root)
       >>> title = 'Please choose an option: '
       
-      >>> option, index = tree_pick(options, title)
+      >>> option, index = pickpack(options, title)
     """
-    picker = TreePicker(*args, **kwargs)
+    picker = PickPacker(*args, **kwargs)
     return picker.start()
