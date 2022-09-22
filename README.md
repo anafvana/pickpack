@@ -2,6 +2,7 @@
 
 [![ci](https://github.com/anafvana/pickpack/actions/workflows/ci.yml/badge.svg)](https://github.com/anafvana/pickpack/actions/workflows/ci.yml)
 [![PyPI version](https://badge.fury.io/py/pickpack.svg)](https://badge.fury.io/py/pickpack)
+[![PyPI](https://img.shields.io/pypi/dm/pickpack)](https://pypi.org/project/pickpack/)
 
 **pickpack** is a small python library based on [wong2's pick](https://github.com/wong2/pick) which allows you to create a curses-based interactive selection tree in the terminal.
 
