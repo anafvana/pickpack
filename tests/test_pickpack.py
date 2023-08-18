@@ -7,7 +7,7 @@ def test_move_up_down():
     title = "Please choose an option: "
     c1 = Node("child1")
     c2 = Node("child2")
-    p1 = Node("parent", children=[c1,c2])
+    p1 = Node("parent", children=[c1, c2])
     options = RenderTree(p1)
     picker = PickPacker(options, title, output_format="nameindex")
     picker.move_up()
@@ -16,53 +16,57 @@ def test_move_up_down():
     picker.move_down()
     assert picker.get_selected() == ("child1", 1)
 
+
 def test_default_index():
     title = "Please choose an option: "
     c1 = Node("child1")
     c2 = Node("child2")
-    p1 = Node("parent", children=[c1,c2])
+    p1 = Node("parent", children=[c1, c2])
     options = RenderTree(p1)
     picker = PickPacker(options, title, output_format="nameindex", default_index=1)
     assert picker.get_selected() == ("child1", 1)
+
 
 def test_get_lines():
     title = "Please choose an option: "
     c1 = Node("child1")
     c2 = Node("child2")
-    p1 = Node("parent", children=[c1,c2])
-    options = RenderTree(p1)    
+    p1 = Node("parent", children=[c1, c2])
+    options = RenderTree(p1)
     picker = PickPacker(options, title, indicator="*", indicator_parentheses=False)
     lines, current_line = picker.get_lines()
-    assert lines == [title, "", "* parent", "     └── child1", "     └── child2"]
+    assert lines == [title, "", "*  parent", "  ├──  child1", "  └──  child2"]
     assert current_line == 3
+
 
 def test_parenthesis():
     title = "Please choose an option: "
     c1 = Node("child1")
     c2 = Node("child2")
-    p1 = Node("parent", children=[c1,c2])
-    options = RenderTree(p1)    
+    p1 = Node("parent", children=[c1, c2])
+    options = RenderTree(p1)
     picker = PickPacker(options, title, indicator="*")
     lines, current_line = picker.get_lines()
-    assert lines == [title, "", "(*) parent", "( )    └── child1", "( )    └── child2"]
+    assert lines == [title, "", "(*)  parent", "( ) ├──  child1", "( ) └──  child2"]
     assert current_line == 3
 
+
 def test_no_title():
-    title = "Please choose an option: "
     c1 = Node("child1")
     c2 = Node("child2")
-    p1 = Node("parent", children=[c1,c2])
-    options = RenderTree(p1)  
+    p1 = Node("parent", children=[c1, c2])
+    options = RenderTree(p1)
     picker = PickPacker(options)
     lines, current_line = picker.get_lines()
     assert current_line == 1
+
 
 def test_multi_select():
     title = "Please choose one or more options: "
     c1 = Node("child1")
     c2 = Node("child2")
-    p1 = Node("parent", children=[c1,c2])
-    options = RenderTree(p1)  
+    p1 = Node("parent", children=[c1, c2])
+    options = RenderTree(p1)
     picker = PickPacker(options, title, multiselect=True, min_selection_count=1, output_format="nameindex")
     assert picker.get_selected() == []
     picker.mark_index()
@@ -70,6 +74,7 @@ def test_multi_select():
     picker.move_down()
     picker.mark_index()
     assert picker.get_selected() == [("child2", 2)]
+
 
 def test_options_map_func():
     title = "Please choose an option: "
@@ -80,22 +85,26 @@ def test_options_map_func():
 
     picker = PickPacker(options, title, indicator="*", options_map_func=get_node, output_format="nameindex")
     lines, current_line = picker.get_lines()
-    assert lines == [title, "", "(*) Select all", "( )    └── option1", "( )    └── option2", "( )    └── option3"]
+    assert lines == [title, "", "(*)  Select all", "( ) ├──  option1", "( ) ├──  option2", "( ) └──  option3"]
     assert picker.get_selected() == ("Select all", 0)
+
 
 def test_list_no_func():
     title = "Please choose an option: "
     options = [{"label": "option1"}, {"label": "option2"}, {"label": "option3"}]
 
-    with pytest.raises(Exception): picker = PickPacker(options, title, indicator="*")
-    with pytest.raises(TypeError): picker = PickPacker(options, title, indicator="*", options_map_func="hello")
+    with pytest.raises(Exception):
+        PickPacker(options, title, indicator="*")
+    with pytest.raises(TypeError):
+        PickPacker(options, title, indicator="*", options_map_func="hello")
+
 
 def test_output_format():
     title = "Please choose one or more options: "
     c1 = Node("child1")
     c2 = Node("child2")
-    p1 = Node("parent", children=[c1,c2])
-    options = RenderTree(p1)  
+    p1 = Node("parent", children=[c1, c2])
+    options = RenderTree(p1)
 
     # Default (nodeindex)
     picker = PickPacker(options, title, multiselect=True, min_selection_count=1)
@@ -138,6 +147,7 @@ def test_output_format():
     with pytest.raises(TypeError):
         picker = PickPacker(options, title, multiselect=True, min_selection_count=1, output_format=1)
 
+
 def test_root_name():
     title = "Please choose an option: "
     options = [{"label": "option1"}, {"label": "option2"}, {"label": "option3"}]
@@ -147,8 +157,9 @@ def test_root_name():
 
     picker = PickPacker(options, title, indicator="*", options_map_func=get_node, output_format="nameindex", root_name="EVERYTHING")
     lines, current_line = picker.get_lines()
-    assert lines == [title, "", "(*) EVERYTHING", "( )    └── option1", "( )    └── option2", "( )    └── option3"]
+    assert lines == [title, "", "(*)  EVERYTHING", "( ) ├──  option1", "( ) ├──  option2", "( ) └──  option3"]
     assert picker.get_selected() == ("EVERYTHING", 0)
+
 
 def test_leaves_only():
     title = "Please choose an option: "
@@ -170,6 +181,7 @@ def test_leaves_only():
     picker = PickPacker(options, title, options_map_func=get_node, output_format="nameindex", output_leaves_only=True, singleselect_output_include_children=True)
     assert picker.get_selected() == [("option1", 1), ("option2", 2), ("option3", 3)]
 
+
 def test_include_children():
     title = "Please choose an option: "
     options = [{"label": "option1"}, {"label": "option2"}, {"label": "option3"}]
@@ -177,8 +189,9 @@ def test_include_children():
     def get_node(option):
         return Node(option.get("label"))
 
-    picker = PickPacker(options, title, options_map_func=get_node, output_format="nameindex",  singleselect_output_include_children=True)
+    picker = PickPacker(options, title, options_map_func=get_node, output_format="nameindex", singleselect_output_include_children=True)
     assert picker.get_selected() == [("Select all", 0), ("option1", 1), ("option2", 2), ("option3", 3)]
+
 
 if __name__ == "__main__":
     test_move_up_down()
