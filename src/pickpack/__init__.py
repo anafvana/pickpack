@@ -57,7 +57,7 @@ class PickPacker:
     singleselect_output_include_children: bool = False
     output_leaves_only: bool = False
     output_format: str = "nodeindex"
-    options_map_func: Optional[Callable[[Dict], Node]] = None
+    options_map_func: Optional[Callable[[Dict], Node]] = lambda object: Node(object)
     all_selected: List[str] = field(init=False, default_factory=list)
     custom_handlers: Dict[str, Callable[["PickPacker"], str]] = field(
         init=False, default_factory=dict
