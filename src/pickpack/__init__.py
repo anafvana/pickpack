@@ -73,9 +73,9 @@ class PickPacker:
         if not self.multiselect and not self.singleselect_output_include_children and self.output_leaves_only:
             raise ValueError('To output only leaves on singleselect mode, singleselect_output_include_children MUST be True')
 
-        optnr = (lambda : count_leaves(self.options.node) if isinstance(self.options, RenderTree) else len(self.options))()
+        optnr = (lambda: count_nodes(self.options.node) if isinstance(self.options, RenderTree) else len(self.options))()
 
-        if self.default_index >= optnr:
+        if (isinstance(self.options, list) and (optnr == 1 and self.default_index >= 1) or (self.default_index > optnr)) or (self.default_index >= optnr and isinstance(self.options, RenderTree)):
             raise ValueError('default_index should be less than the length of options')
 
         if self.multiselect and self.min_selection_count > optnr:
