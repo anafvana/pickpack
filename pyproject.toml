@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pickpack"
-version = "1.0.1"
+version = "1.0.2"
 description = "Based on wong2's pick, pickpack is a terminal GUI which allows you to pick one or more options from a tree structure"
 authors = ["Ana <anafvana@gmail.com>", "wong2 <wonderfuly@gmail.com>"]
 license = "MIT"
