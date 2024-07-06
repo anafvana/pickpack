@@ -1,17 +1,16 @@
-''' pickpack.py '''
-  
+""" pickpack.py """
+
 from __future__ import annotations
 
 import curses
 import enum
+from _curses import window
 from dataclasses import dataclass, field
-from typing import Callable, Dict, List, Optional, TypeVar
+from typing import Any, Callable, TypeAlias, TypeVar
 
 from anytree import Node, RenderTree
 
-from pickpack.anytree_utils import (add_indices, count_nodes,
-                                    find_by_index, get_descendants,
-                                    get_leaves_only)
+from pickpack.anytree_utils import add_indices, count_nodes, find_by_index, get_descendants, get_leaves_only
 
 __all__ = ['PickPacker', 'pickpack']
 
@@ -20,6 +19,10 @@ KEYS_ENTER = (curses.KEY_ENTER, ord('\n'), ord('\r'))
 KEYS_UP = (curses.KEY_UP, ord('k'))
 KEYS_DOWN = (curses.KEY_DOWN, ord('j'))
 KEYS_SELECT = (curses.KEY_RIGHT, ord(' '))
+
+NodeWithIndex: TypeAlias = tuple[str | Node, int] | list[tuple[str | Node, int]]
+NodeNameOnly: TypeAlias = str | Node | list[Node | str]
+AnyNode: TypeAlias = NodeNameOnly | NodeWithIndex
 
 _T = TypeVar("_T")
 
@@ -54,9 +57,10 @@ class PickPacker:
     :param options_map_func: (optional) a mapping function to pass each option through before displaying
     """
 
+    # list is only for users, internally options is always RenderTree (converted in post_init)
     options: RenderTree | list[_T]
-    title: Optional[str] = None
-    root_name: Optional[str] = None
+    title: str | None = None
+    root_name: str | None = None
     indicator: str = "*"
     indicator_parentheses: bool = True
     indicator_parentheses_design: tuple[str, str] = ("(", ")")
@@ -66,13 +70,12 @@ class PickPacker:
     singleselect_output_include_children: bool = False
     output_leaves_only: bool = False
     output_format: OutputMode = OutputMode.NodeIndex
-    options_map_func: Optional[Callable[[_T], Node]] = lambda o: Node(o)
-    all_selected: List[str] = field(init=False, default_factory=list)
-    custom_handlers: Dict[str, Callable[["PickPacker"], str]] = field(
-        init=False, default_factory=dict
-    )
-    index: int = field(init=False, default=0)
-    scroll_top: int = field(init=False, default=0)
+    # the default is not perfect, but good enough for most cases
+    options_map_func: Callable[[_T], Node] | None = lambda o: Node(str(o))
+    all_selected: list[int] = field(init=False, default_factory=list)
+    custom_handlers: dict[int, Callable[[PickPacker], Any]] = field(init=False, default_factory=dict)
+    index: int = 0
+    scroll_top: int = 0
 
     def __post_init__(self):
         # Check for correct number of elements
@@ -108,7 +111,6 @@ class PickPacker:
         if isinstance(self.options, RenderTree) and self.root_name is not None:
             self.options.node.name = self.root_name
 
-        # Define output format
         if not isinstance(self.output_format, OutputMode):
             raise TypeError('Invalid output_format property type. Must be OutputMode (nodeindex, nameindex, nodeonly, or nameonly)')
         
@@ -117,27 +119,27 @@ class PickPacker:
 
         self.index = self.default_index
 
-    def register_custom_handler(self, key, func):
+    def register_custom_handler(self, key: int, func: Callable[[PickPacker], Any]) -> None:
         self.custom_handlers[key] = func
-
-    def move_up(self):
+    
+    def move_up(self) -> None:
         self.index -= 1
         if self.index < 0:
             self.index = count_nodes(self.options.node) - 1
 
-    def move_down(self):
+    def move_down(self) -> None:
         self.index += 1
         if self.index >= count_nodes(self.options.node):
             self.index = 0
 
-    def check_children(self, node: Node):
+    def check_children(self, node: Node) -> None:
         for child in node.children:
             if child.index not in self.all_selected:
                 self.all_selected.append(child.index)
             if child.children:
                 self.check_children(child)
     
-    def check_ancestors(self, node: Node):
+    def check_ancestors(self, node: Node) -> None:
         while node is not None and node.parent:
             all_checked = 1
             for child in node.parent.children:
@@ -148,14 +150,14 @@ class PickPacker:
             else:
                 node = None
 
-    def uncheck_children(self, node: Node):
+    def uncheck_children(self, node: Node) -> None:
         for child in node.children:
             if child.index in self.all_selected:
                 self.all_selected.remove(child.index)
             if child.children:
                 self.uncheck_children(child)
 
-    def uncheck_ancestors(self, node: Node):
+    def uncheck_ancestors(self, node: Node) -> None:
         while node is not None and node.parent:
             try:
                 self.all_selected.remove(node.parent.index)
@@ -163,17 +165,17 @@ class PickPacker:
             except ValueError:
                 node = None
 
-    def add_relatives_index(self):
+    def add_relatives_index(self) -> None:
         node = find_by_index(self.options.node, self.index)
         self.check_children(node)
         self.check_ancestors(node)
 
-    def remove_relatives_index(self):
+    def remove_relatives_index(self) -> None:
         node = find_by_index(self.options.node, self.index)
         self.uncheck_children(node)
         self.uncheck_ancestors(node)
 
-    def mark_index(self):
+    def mark_index(self) -> None:
         if self.multiselect:
             if self.index in self.all_selected:
                 self.all_selected.remove(self.index)
@@ -182,10 +184,10 @@ class PickPacker:
                 self.all_selected.append(self.index)
                 self.add_relatives_index()
 
-    def get_selected_noindex(self):
-        nameonly = bool(self.output_format - 2)
+    def get_selected_noindex(self) -> NodeNameOnly:
+        nameonly = self.output_format == OutputMode.NameOnly
         if self.multiselect:
-            return_tuples = []
+            return_tuples: list[Node] = []
             if self.output_leaves_only:
                 for selected in self.all_selected:
                     node = find_by_index(self.options.node, selected)
@@ -217,14 +219,14 @@ class PickPacker:
                     else:
                         return node
     
-    def get_selected_withindex(self):
+    def get_selected_withindex(self) -> NodeWithIndex:
         """return the current selected option as a tuple: (option, index)
            or as a list of tuples (in case multiselect==True)
         """
         nameonly = bool(self.output_format)
 
         if self.multiselect:
-            return_tuples = []
+            return_tuples: list[NodeWithIndex] = []
             if self.output_leaves_only:
                 for selected in self.all_selected:
                     node = find_by_index(self.options.node, selected)
@@ -261,22 +263,22 @@ class PickPacker:
                 else:
                     return node, self.index
 
-    def get_selected(self):
+    def get_selected(self) -> AnyNode:
         """return the current selected option as a tuple: (option, index)
-           or as a list of tuples (in case multiselect==True)
+           or as a list of tuples (in case multiselect is True)
         """
-        if self.output_format == 0 or self.output_format == 1:
+        if self.output_format == OutputMode.NodeIndex or self.output_format == OutputMode.NameIndex:
             return self.get_selected_withindex()
-        elif self.output_format == 2 or self.output_format == 3:
+        elif self.output_format == OutputMode.NameOnly or self.output_format == OutputMode.NodeOnly:
             return self.get_selected_noindex()
 
-    def get_title_lines(self):
+    def get_title_lines(self) -> list[str]:
         if self.title:
             return self.title.split('\n') + ['']
         return []
 
-    def get_option_lines(self):
-        lines: list = []
+    def get_option_lines(self) -> list[str | tuple[str, int]]:
+        lines: list[str | tuple[str, int]] = []
         for index, option in enumerate(self.options):
             prefix = self.indicator_parentheses * self.indicator_parentheses_design[0]
             
@@ -306,7 +308,7 @@ class PickPacker:
         current_line = self.index + len(title_lines) + 1
         return lines, current_line
 
-    def draw(self, screen):
+    def draw(self, screen) -> None:
         """draw the curses ui on the screen, handle scroll if needed"""
         screen.clear()
 
@@ -333,10 +335,10 @@ class PickPacker:
 
         screen.refresh()
 
-    def run_loop(self, screen):
+    def run_loop(self, screen: window) -> AnyNode:
         while True:
             self.draw(screen)
-            c = screen.getch()
+            c: int = screen.getch()
             if c in KEYS_UP:
                 self.move_up()
             elif c in KEYS_DOWN:
@@ -348,11 +350,11 @@ class PickPacker:
             elif c in KEYS_SELECT and self.multiselect:
                 self.mark_index()
             elif c in self.custom_handlers:
-                ret = self.custom_handlers[c](self)
-                if ret:
+                if ret := self.custom_handlers[c](self):
                     return ret
 
-    def config_curses(self):
+    @staticmethod
+    def config_curses() -> None:
         try:
             # use the default colors of the terminal
             curses.use_default_colors()
@@ -361,19 +363,20 @@ class PickPacker:
             # add some color for multi_select
             # @todo make colors configurable
             curses.init_pair(1, curses.COLOR_GREEN, curses.COLOR_WHITE)
-        except:
+        except curses.error:
             # Curses failed to initialize color support, eg. when TERM=vt100
             curses.initscr()
 
-    def _start(self, screen):
-        self.config_curses()
+    def _start(self, screen: window) -> AnyNode:
+        PickPacker.config_curses()
         return self.run_loop(screen)
 
-    def start(self):
+    def start(self) -> AnyNode:
+        """Starts the interaction with the user"""
         return curses.wrapper(self._start)
 
 
-def pickpack(*args, **kwargs):
+def pickpack(*args, **kwargs) -> AnyNode:
     """Construct and start a :class:`PickPacker <PickPacker>`.
 
     Usage::
