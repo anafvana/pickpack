@@ -4,7 +4,7 @@ from pickpack import PickPacker, OutputMode
 
 
 def test_move_up_down():
-    title = "Please choose an option: "
+    title = "Please choose an option:"
     c1 = Node("child1")
     c2 = Node("child2")
     p1 = Node("parent", children=[c1, c2])
@@ -28,7 +28,7 @@ def test_default_index():
 
 
 def test_get_lines():
-    title = "Please choose an option: "
+    title = "Please choose an option:"
     c1 = Node("child1")
     c2 = Node("child2")
     p1 = Node("parent", children=[c1, c2])
@@ -40,7 +40,7 @@ def test_get_lines():
 
 
 def test_parenthesis():
-    title = "Please choose an option: "
+    title = "Please choose an option:"
     c1 = Node("child1")
     c2 = Node("child2")
     p1 = Node("parent", children=[c1, c2])
@@ -62,7 +62,7 @@ def test_no_title():
 
 
 def test_multi_select():
-    title = "Please choose one or more options: "
+    title = "Please choose one or more options:"
     c1 = Node("child1")
     c2 = Node("child2")
     p1 = Node("parent", children=[c1, c2])
@@ -77,7 +77,7 @@ def test_multi_select():
 
 
 def test_options_map_func():
-    title = "Please choose an option: "
+    title = "Please choose an option:"
     options = [{"label": "option1"}, {"label": "option2"}, {"label": "option3"}]
 
     def get_node(option):
@@ -90,7 +90,7 @@ def test_options_map_func():
 
 
 def test_list_no_func():
-    title = "Please choose an option: "
+    title = "Please choose an option:"
     options = [{"label": "option1"}, {"label": "option2"}, {"label": "option3"}]
 
     # no function is fine, the default handles it
@@ -100,7 +100,7 @@ def test_list_no_func():
 
 
 def test_output_format():
-    title = "Please choose one or more options: "
+    title = "Please choose one or more options:"
     c1 = Node("child1")
     c2 = Node("child2")
     p1 = Node("parent", children=[c1, c2])
@@ -149,7 +149,7 @@ def test_output_format():
 
 
 def test_root_name():
-    title = "Please choose an option: "
+    title = "Please choose an option:"
     options = [{"label": "option1"}, {"label": "option2"}, {"label": "option3"}]
 
     def get_node(option):
@@ -162,7 +162,7 @@ def test_root_name():
 
 
 def test_leaves_only():
-    title = "Please choose an option: "
+    title = "Please choose an option:"
     options = [{"label": "option1"}, {"label": "option2"}, {"label": "option3"}]
 
     def get_node(option):
@@ -183,7 +183,7 @@ def test_leaves_only():
 
 
 def test_include_children():
-    title = "Please choose an option: "
+    title = "Please choose an option:"
     options = [{"label": "option1"}, {"label": "option2"}, {"label": "option3"}]
 
     def get_node(option):
@@ -191,6 +191,22 @@ def test_include_children():
 
     picker = PickPacker(options, title, options_map_func=get_node, output_format=OutputMode.NameIndex, singleselect_output_include_children=True)
     assert picker.get_selected() == [("Select all", 0), ("option1", 1), ("option2", 2), ("option3", 3)]
+
+
+def test_custom_indicator_parentheses():
+    title = "Please choose an option:"
+    options = ["option1", "option2", "option3"]
+    
+    picker = PickPacker(options, title, indicator_parentheses_design=(">>", "<<"))
+    assert picker.get_lines() == (['Please choose an option:', '', '>>*<<  Select all', '>> << ├──  option1', '>> << ├──  option2', '>> << └──  option3'], 3)
+
+
+def test_custom_indicator_parentheses_and_indicator():
+    title = "Please choose an option:"
+    options = ["option1", "option2", "option3"]
+    
+    picker = PickPacker(options, title, indicator_parentheses_design=(">>", "<<"), indicator="==")
+    assert picker.get_lines() == (['Please choose an option:', '', '>>==<<  Select all', '>>  << ├──  option1', '>>  << ├──  option2', '>>  << └──  option3'], 3)
 
 
 if __name__ == "__main__":

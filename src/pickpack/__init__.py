@@ -5,7 +5,7 @@ from __future__ import annotations
 import curses
 import enum
 from dataclasses import dataclass, field
-from typing import Callable, Dict, List, Optional
+from typing import Callable, Dict, List, Optional, TypeVar
 
 from anytree import Node, RenderTree
 
@@ -20,6 +20,8 @@ KEYS_ENTER = (curses.KEY_ENTER, ord('\n'), ord('\r'))
 KEYS_UP = (curses.KEY_UP, ord('k'))
 KEYS_DOWN = (curses.KEY_DOWN, ord('j'))
 KEYS_SELECT = (curses.KEY_RIGHT, ord(' '))
+
+_T = TypeVar("_T")
 
 
 class OutputMode(enum.IntEnum):
@@ -47,22 +49,24 @@ class PickPacker:
     :param output_format: (optional) allows for customising output format.
     :param indicator: (optional) custom the selection indicator
     :param indicator_parentheses: (optional) include/remove parentheses around selection indicator; defaults to True
+    :param indicator_parentheses_design: (optional) the design of the parentheses for the indicator; defaults to '("(", ")")'
     :param default_index: (optional) set this if the default selected option is not the first one
     :param options_map_func: (optional) a mapping function to pass each option through before displaying
     """
 
-    options: RenderTree | list
+    options: RenderTree | list[_T]
     title: Optional[str] = None
     root_name: Optional[str] = None
     indicator: str = "*"
     indicator_parentheses: bool = True
+    indicator_parentheses_design: tuple[str, str] = ("(", ")")
     default_index: int = 0
     multiselect: bool = False
     min_selection_count: int = 0
     singleselect_output_include_children: bool = False
     output_leaves_only: bool = False
     output_format: OutputMode = OutputMode.NodeIndex
-    options_map_func: Optional[Callable[[Dict], Node]] = lambda o: Node(o)
+    options_map_func: Optional[Callable[[_T], Node]] = lambda o: Node(o)
     all_selected: List[str] = field(init=False, default_factory=list)
     custom_handlers: Dict[str, Callable[["PickPacker"], str]] = field(
         init=False, default_factory=dict
@@ -107,6 +111,9 @@ class PickPacker:
         # Define output format
         if not isinstance(self.output_format, OutputMode):
             raise TypeError('Invalid output_format property type. Must be OutputMode (nodeindex, nameindex, nodeonly, or nameonly)')
+        
+        if not isinstance(self.indicator_parentheses_design, tuple) or len(self.indicator_parentheses_design) != 2 or not isinstance(self.indicator_parentheses_design[0], str) or not isinstance(self.indicator_parentheses_design[1], str):
+            raise TypeError('Invalid indicator_parentheses_design type: must be tuple[str, str]')
 
         self.index = self.default_index
 
@@ -269,23 +276,30 @@ class PickPacker:
         return []
 
     def get_option_lines(self):
-        lines = []
+        lines: list = []
         for index, option in enumerate(self.options):
+            prefix = self.indicator_parentheses * self.indicator_parentheses_design[0]
+            
             if index == self.index:
-                prefix = (self.indicator_parentheses * "(") + self.indicator + (self.indicator_parentheses * ")") + " " + (option.pre)
+                prefix += self.indicator
             else:
-                prefix = (self.indicator_parentheses * "(") + (len(self.indicator) * ' ') + (self.indicator_parentheses * ")") + " " + (option.pre)
+                prefix += (len(self.indicator) * ' ')
+            
+            prefix += self.indicator_parentheses * self.indicator_parentheses_design[1] + " " + option.pre
 
             if self.multiselect and index in self.all_selected:
-                format = curses.color_pair(1)
-                line = ('{0} {1}'.format(prefix, option.node.name), format)
+                format_ = curses.color_pair(1)
+                line = ('{0} {1}'.format(prefix, option.node.name), format_)
             else:
                 line = '{0} {1}'.format(prefix, option.node.name)
             lines.append(line)
 
         return lines
 
-    def get_lines(self):
+    def get_lines(self) -> tuple[list[str], int]:
+        """Get the displayed lines and the current line (NOT the index)
+        
+        :returns: a tuple containing the lines and the current line number"""
         title_lines = self.get_title_lines()
         option_lines = self.get_option_lines()
         lines = title_lines + option_lines
