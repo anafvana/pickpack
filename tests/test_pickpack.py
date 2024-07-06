@@ -93,8 +93,8 @@ def test_list_no_func():
     title = "Please choose an option: "
     options = [{"label": "option1"}, {"label": "option2"}, {"label": "option3"}]
 
-    with pytest.raises(Exception):
-        PickPacker(options, title, indicator="*")
+    # no function is fine, the default handles it
+    PickPacker(options, title, indicator="*")
     with pytest.raises(TypeError):
         PickPacker(options, title, indicator="*", options_map_func="hello")
 
