@@ -222,4 +222,6 @@ if __name__ == "__main__":
     test_root_name()
     test_leaves_only()
     test_include_children()
+    test_custom_indicator_parentheses()
+    test_custom_indicator_parentheses_and_indicator()       
     print("Tests concluded")
