@@ -83,7 +83,7 @@ class PickPacker:
 
         # Check for correct options_map_func and build tree
         if self.options_map_func is None and isinstance(self.options, list):
-            raise Exception('options_map_func that maps list items to Node objects is required when passing options of type list')
+            raise ValueError('options_map_func that maps list items to Node objects is required when passing options of type list')
         elif self.options_map_func is not None and not callable(self.options_map_func):
             raise TypeError('options_map_func must be a callable function')
         elif self.options_map_func is not None and callable(self.options_map_func) and isinstance(self.options, list):
@@ -131,7 +131,7 @@ class PickPacker:
                 self.check_children(child)
     
     def check_ancestors(self, node: Node):
-        while (node is not None and node.parent):
+        while node is not None and node.parent:
             all_checked = 1
             for child in node.parent.children:
                 all_checked = all_checked * (child.index in self.all_selected)
@@ -149,7 +149,7 @@ class PickPacker:
                 self.uncheck_children(child)
 
     def uncheck_ancestors(self, node: Node):
-        while (node is not None and node.parent):
+        while node is not None and node.parent:
             try:
                 self.all_selected.remove(node.parent.index)
                 node = node.parent

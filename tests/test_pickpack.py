@@ -57,7 +57,7 @@ def test_no_title():
     p1 = Node("parent", children=[c1, c2])
     options = RenderTree(p1)
     picker = PickPacker(options)
-    lines, current_line = picker.get_lines()
+    _, current_line = picker.get_lines()
     assert current_line == 1
 
 
@@ -85,6 +85,7 @@ def test_options_map_func():
 
     picker = PickPacker(options, title, indicator="*", options_map_func=get_node, output_format="nameindex")
     lines, current_line = picker.get_lines()
+    lines, _ = picker.get_lines()
     assert lines == [title, "", "(*)  Select all", "( ) ├──  option1", "( ) ├──  option2", "( ) └──  option3"]
     assert picker.get_selected() == ("Select all", 0)
 
@@ -141,11 +142,11 @@ def test_output_format():
     picker.mark_index()
     assert picker.get_selected() == ["child1"]
 
-    with pytest.raises(ValueError):
-        picker = PickPacker(options, title, multiselect=True, min_selection_count=1, output_format="invalid")
+    with pytest.raises(TypeError):
+        PickPacker(options, title, multiselect=True, min_selection_count=1, output_format="invalid")
 
     with pytest.raises(TypeError):
-        picker = PickPacker(options, title, multiselect=True, min_selection_count=1, output_format=1)
+        PickPacker(options, title, multiselect=True, min_selection_count=1, output_format=1)
 
 
 def test_root_name():
@@ -157,6 +158,7 @@ def test_root_name():
 
     picker = PickPacker(options, title, indicator="*", options_map_func=get_node, output_format="nameindex", root_name="EVERYTHING")
     lines, current_line = picker.get_lines()
+    lines, _ = picker.get_lines()
     assert lines == [title, "", "(*)  EVERYTHING", "( ) ├──  option1", "( ) ├──  option2", "( ) └──  option3"]
     assert picker.get_selected() == ("EVERYTHING", 0)
 
