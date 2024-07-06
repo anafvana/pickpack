@@ -23,10 +23,15 @@ KEYS_SELECT = (curses.KEY_RIGHT, ord(' '))
 
 
 class OutputMode(enum.IntEnum):
+    """Changes how the selected entry is returned"""
     NodeIndex = 0
+    """Returns the selected node and it's index: [(Node('name'), index)]"""
     NameIndex = 1
+    """Returns the name of the selected node and it's index: [('name', index)]"""
     NodeOnly = 2
+    """Returns only the selected node: [Node('name')]"""
     NameOnly = 3
+    """Returns only the name of the selected node: ['name']"""
 
 
 @dataclass
@@ -39,7 +44,7 @@ class PickPacker:
     :param multiselect: (optional) if true its possible to select multiple values by hitting SPACE; defaults to False
     :param singleselect_output_include_children: (optional) if true, output will include all children of the selected node, as well as the node itself; defaults to False
     :param output_leaves_only: (optional) if true, only leaf nodes will be returned; for singleselect mode, singleselect_output_include_children MUST be True; defaults to False
-    :param output_format: (optional) allows for customising output format. "nodeindex" = [(Node('name'), index)]; "nameindex" = [('name', index)]; "nodeonly" = [Node('name')]; "nameonly" = ['name']; default is "nodeindex"
+    :param output_format: (optional) allows for customising output format.
     :param indicator: (optional) custom the selection indicator
     :param indicator_parentheses: (optional) include/remove parentheses around selection indicator; defaults to True
     :param default_index: (optional) set this if the default selected option is not the first one
@@ -101,7 +106,7 @@ class PickPacker:
 
         # Define output format
         if not isinstance(self.output_format, OutputMode):
-            raise TypeError('Invalid output_format property type. Must be OutputMode ("nodeindex", "nameindex", "nodeonly" or "nameonly")')
+            raise TypeError('Invalid output_format property type. Must be OutputMode (nodeindex, nameindex, nodeonly, or nameonly)')
 
         self.index = self.default_index
 
