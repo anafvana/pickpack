@@ -22,11 +22,11 @@ KEYS_DOWN = (curses.KEY_DOWN, ord('j'))
 KEYS_SELECT = (curses.KEY_RIGHT, ord(' '))
 
 
-class OutputMode(enum.Enum):
-    nodeindex = 0
-    nameindex = 1
-    nodeonly = 2
-    nameonly = 3
+class OutputMode(enum.IntEnum):
+    NodeIndex = 0
+    NameIndex = 1
+    NodeOnly = 2
+    NameOnly = 3
 
 
 @dataclass
@@ -56,8 +56,8 @@ class PickPacker:
     min_selection_count: int = 0
     singleselect_output_include_children: bool = False
     output_leaves_only: bool = False
-    output_format: str = "nodeindex"
-    options_map_func: Optional[Callable[[Dict], Node]] = lambda object: Node(object)
+    output_format: OutputMode = OutputMode.NodeIndex
+    options_map_func: Optional[Callable[[Dict], Node]] = lambda o: Node(o)
     all_selected: List[str] = field(init=False, default_factory=list)
     custom_handlers: Dict[str, Callable[["PickPacker"], str]] = field(
         init=False, default_factory=dict
@@ -100,13 +100,8 @@ class PickPacker:
             self.options.node.name = self.root_name
 
         # Define output format
-        if isinstance(self.output_format, str):
-            try:
-                self.output_format = OutputMode[self.output_format].value
-            except KeyError:
-                raise ValueError('Invalid output_format property. Must be "nodeindex", "nameindex", "nodeonly" or "nameonly"')
-        else:
-            raise TypeError('Invalid output_format property type. Must be string ("nodeindex", "nameindex", "nodeonly" or "nameonly")')
+        if not isinstance(self.output_format, OutputMode):
+            raise TypeError('Invalid output_format property type. Must be OutputMode ("nodeindex", "nameindex", "nodeonly" or "nameonly")')
 
         self.index = self.default_index
 

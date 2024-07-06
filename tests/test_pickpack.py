@@ -1,6 +1,6 @@
 import pytest
 from anytree import Node, RenderTree
-from pickpack import PickPacker
+from pickpack import PickPacker, OutputMode
 
 
 def test_move_up_down():
@@ -9,7 +9,7 @@ def test_move_up_down():
     c2 = Node("child2")
     p1 = Node("parent", children=[c1, c2])
     options = RenderTree(p1)
-    picker = PickPacker(options, title, output_format="nameindex")
+    picker = PickPacker(options, title, output_format=OutputMode.NameIndex)
     picker.move_up()
     assert picker.get_selected() == ("child2", 2)
     picker.move_down()
@@ -23,7 +23,7 @@ def test_default_index():
     c2 = Node("child2")
     p1 = Node("parent", children=[c1, c2])
     options = RenderTree(p1)
-    picker = PickPacker(options, title, output_format="nameindex", default_index=1)
+    picker = PickPacker(options, title, output_format=OutputMode.NameIndex, default_index=1)
     assert picker.get_selected() == ("child1", 1)
 
 
@@ -67,7 +67,7 @@ def test_multi_select():
     c2 = Node("child2")
     p1 = Node("parent", children=[c1, c2])
     options = RenderTree(p1)
-    picker = PickPacker(options, title, multiselect=True, min_selection_count=1, output_format="nameindex")
+    picker = PickPacker(options, title, multiselect=True, min_selection_count=1, output_format=OutputMode.NameIndex)
     assert picker.get_selected() == []
     picker.mark_index()
     assert picker.get_selected() == [("parent", 0), ("child1", 1), ("child2", 2)]
@@ -83,8 +83,7 @@ def test_options_map_func():
     def get_node(option):
         return Node(option.get("label"))
 
-    picker = PickPacker(options, title, indicator="*", options_map_func=get_node, output_format="nameindex")
-    lines, current_line = picker.get_lines()
+    picker = PickPacker(options, title, indicator="*", options_map_func=get_node, output_format=OutputMode.NameIndex)
     lines, _ = picker.get_lines()
     assert lines == [title, "", "(*)  Select all", "( ) ├──  option1", "( ) ├──  option2", "( ) └──  option3"]
     assert picker.get_selected() == ("Select all", 0)
@@ -115,28 +114,28 @@ def test_output_format():
     assert picker.get_selected() == [(c1, 1)]
 
     # nodeindex
-    picker = PickPacker(options, title, multiselect=True, min_selection_count=1, output_format="nodeindex")
+    picker = PickPacker(options, title, multiselect=True, min_selection_count=1, output_format=OutputMode.NodeIndex)
     assert picker.get_selected() == []
     picker.move_down()
     picker.mark_index()
     assert picker.get_selected() == [(c1, 1)]
 
     # nameindex
-    picker = PickPacker(options, title, multiselect=True, min_selection_count=1, output_format="nameindex")
+    picker = PickPacker(options, title, multiselect=True, min_selection_count=1, output_format=OutputMode.NameIndex)
     assert picker.get_selected() == []
     picker.move_down()
     picker.mark_index()
     assert picker.get_selected() == [("child1", 1)]
 
     # nodeonly
-    picker = PickPacker(options, title, multiselect=True, min_selection_count=1, output_format="nodeonly")
+    picker = PickPacker(options, title, multiselect=True, min_selection_count=1, output_format=OutputMode.NodeOnly)
     assert picker.get_selected() == []
     picker.move_down()
     picker.mark_index()
     assert picker.get_selected() == [c1]
 
     # nameonly
-    picker = PickPacker(options, title, multiselect=True, min_selection_count=1, output_format="nameonly")
+    picker = PickPacker(options, title, multiselect=True, min_selection_count=1, output_format=OutputMode.NameOnly)
     assert picker.get_selected() == []
     picker.move_down()
     picker.mark_index()
@@ -156,8 +155,7 @@ def test_root_name():
     def get_node(option):
         return Node(option.get("label"))
 
-    picker = PickPacker(options, title, indicator="*", options_map_func=get_node, output_format="nameindex", root_name="EVERYTHING")
-    lines, current_line = picker.get_lines()
+    picker = PickPacker(options, title, indicator="*", options_map_func=get_node, output_format=OutputMode.NameIndex, root_name="EVERYTHING")
     lines, _ = picker.get_lines()
     assert lines == [title, "", "(*)  EVERYTHING", "( ) ├──  option1", "( ) ├──  option2", "( ) └──  option3"]
     assert picker.get_selected() == ("EVERYTHING", 0)
@@ -171,16 +169,16 @@ def test_leaves_only():
         return Node(option.get("label"))
 
     # Multiselect
-    picker = PickPacker(options, title, multiselect=True, options_map_func=get_node, output_format="nameindex", output_leaves_only=True)
+    picker = PickPacker(options, title, multiselect=True, options_map_func=get_node, output_format=OutputMode.NameIndex, output_leaves_only=True)
     assert picker.get_selected() == []
     picker.mark_index()
     assert picker.get_selected() == [("option1", 1), ("option2", 2), ("option3", 3)]
 
     # Singleselect
     with pytest.raises(ValueError):
-        picker = PickPacker(options, title, options_map_func=get_node, output_format="nameindex", output_leaves_only=True)
+        PickPacker(options, title, options_map_func=get_node, output_format=OutputMode.NameIndex, output_leaves_only=True)
     
-    picker = PickPacker(options, title, options_map_func=get_node, output_format="nameindex", output_leaves_only=True, singleselect_output_include_children=True)
+    picker = PickPacker(options, title, options_map_func=get_node, output_format=OutputMode.NameIndex, output_leaves_only=True, singleselect_output_include_children=True)
     assert picker.get_selected() == [("option1", 1), ("option2", 2), ("option3", 3)]
 
 
@@ -191,7 +189,7 @@ def test_include_children():
     def get_node(option):
         return Node(option.get("label"))
 
-    picker = PickPacker(options, title, options_map_func=get_node, output_format="nameindex", singleselect_output_include_children=True)
+    picker = PickPacker(options, title, options_map_func=get_node, output_format=OutputMode.NameIndex, singleselect_output_include_children=True)
     assert picker.get_selected() == [("Select all", 0), ("option1", 1), ("option2", 2), ("option3", 3)]
 
 
