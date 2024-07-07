@@ -238,14 +238,13 @@ class PickPacker:
     def index_multi_select(self) -> list[NodeWithIndex]:
         nodes: list[tuple[str | Node, int]] = []
         
-        if self.output_leaves_only:
-            for selected in self.all_selected:
+        for selected in self.all_selected:
+            if self.output_leaves_only:
                 node: Node = find_by_index(self.options.node, selected)
                 nodes.extend([(leaf, leaf.index) for leaf in get_leaves_only(node) if (leaf, leaf.index) not in nodes])
-        else:
-            for selected in self.all_selected:
+            else:
                 nodes.append((find_by_index(self.options.node, selected), selected))
-            
+        
         if self.name_only:
             nodes = [(n[0].name, n[1]) for n in nodes]
         
