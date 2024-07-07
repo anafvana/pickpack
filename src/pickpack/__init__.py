@@ -375,7 +375,7 @@ class PickPacker:
             curses.initscr()
 
     def _start(self, screen: window) -> AnyNode:
-        PickPacker.config_curses()
+        self.config_curses()
         return self.run_loop(screen)
 
     def start(self) -> AnyNode:
