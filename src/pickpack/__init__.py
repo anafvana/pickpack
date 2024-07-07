@@ -49,7 +49,7 @@ class PickPacker:
     :param multiselect: (optional) if true its possible to select multiple values by hitting SPACE; defaults to False
     :param singleselect_output_include_children: (optional) if true, output will include all children of the selected node, as well as the node itself; defaults to False
     :param output_leaves_only: (optional) if true, only leaf nodes will be returned; for singleselect mode, singleselect_output_include_children MUST be True; defaults to False
-    :param output_format: (optional) allows for customising output format.
+    :param output_format: (optional) allows for customising output format. Can be of type OutputMode or str: "nodeindex" = [(Node('name'), index)]; "nameindex" = [('name', index)]; "nodeonly" = [Node('name')]; "nameonly" = ['name']; default is "nodeindex"
     :param indicator: (optional) custom the selection indicator
     :param indicator_parentheses: (optional) include/remove parentheses around selection indicator; defaults to True
     :param indicator_parentheses_design: (optional) the design of the parentheses for the indicator; defaults to '("(", ")")'
@@ -235,7 +235,7 @@ class PickPacker:
         nameonly = bool(self.output_format)
 
         if self.multiselect:
-            return_tuples: list[tuple[str | Node, int]] = []    
+            return_tuples: list[tuple[str | Node, int]] = []
             if self.output_leaves_only:
                 for selected in self.all_selected:
                     node = find_by_index(self.options.node, selected)
