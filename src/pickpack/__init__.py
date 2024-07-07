@@ -74,8 +74,8 @@ class PickPacker:
     options_map_func: Callable[[_T], Node] | None = lambda o: Node(str(o))
     all_selected: list[int] = field(init=False, default_factory=list)
     custom_handlers: dict[int, Callable[[PickPacker], Any]] = field(init=False, default_factory=dict)
-    index: int = 0
-    scroll_top: int = 0
+    index: int = field(init=False, default=0)
+    scroll_top: int = field(init=False, default=0)
 
     def __post_init__(self):
         # Check for correct number of elements
