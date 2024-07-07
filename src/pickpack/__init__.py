@@ -72,6 +72,9 @@ class PickPacker:
     output_format: OutputMode = OutputMode.NodeIndex
     # the default is not perfect, but good enough for most cases
     options_map_func: Callable[[_T], Node] | None = lambda o: Node(str(o))
+    foreground: int = curses.COLOR_WHITE
+    background: int = curses.COLOR_GREEN
+    # internal fields
     all_selected: list[int] = field(init=False, default_factory=list)
     custom_handlers: dict[int, Callable[[PickPacker], Any]] = field(init=False, default_factory=dict)
     index: int = field(init=False, default=0)
@@ -353,16 +356,14 @@ class PickPacker:
                 if ret := self.custom_handlers[c](self):
                     return ret
 
-    @staticmethod
-    def config_curses() -> None:
+    def config_curses(self) -> None:
         try:
             # use the default colors of the terminal
             curses.use_default_colors()
             # hide the cursor
             curses.curs_set(0)
             # add some color for multi_select
-            # @todo make colors configurable
-            curses.init_pair(1, curses.COLOR_GREEN, curses.COLOR_WHITE)
+            curses.init_pair(1, self.foreground, self.background)
         except curses.error:
             # Curses failed to initialize color support, eg. when TERM=vt100
             curses.initscr()
