@@ -6,7 +6,7 @@ import curses
 import enum
 from _curses import window
 from dataclasses import dataclass, field
-from typing import Any, Callable, TypeAlias, TypeVar
+from typing import Any, Callable, TypeVar, Union
 
 from anytree import Node, RenderTree
 
@@ -19,10 +19,10 @@ KEYS_ENTER = (curses.KEY_ENTER, ord('\n'), ord('\r'))
 KEYS_UP = (curses.KEY_UP, ord('k'))
 KEYS_DOWN = (curses.KEY_DOWN, ord('j'))
 KEYS_SELECT = (curses.KEY_RIGHT, ord(' '))
-
-NodeWithIndex: TypeAlias = tuple[str | Node, int]
-NodeNameOnly: TypeAlias = str | Node
-AnyNode: TypeAlias = NodeNameOnly | NodeWithIndex
+    
+NodeWithIndex = tuple[Union[str, Node], int]
+NodeNameOnly = Union[str, Node]
+AnyNode = Union[NodeNameOnly, NodeWithIndex]
 
 _T = TypeVar("_T")
 
