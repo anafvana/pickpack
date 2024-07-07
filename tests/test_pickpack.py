@@ -1,3 +1,5 @@
+import curses
+
 import pytest
 from anytree import Node, RenderTree
 from pickpack import PickPacker, OutputMode
@@ -223,5 +225,5 @@ if __name__ == "__main__":
     test_leaves_only()
     test_include_children()
     test_custom_indicator_parentheses()
-    test_custom_indicator_parentheses_and_indicator()       
+    test_custom_indicator_parentheses_and_indicator()
     print("Tests concluded")
