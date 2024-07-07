@@ -280,7 +280,7 @@ class PickPacker:
         else:
             return self.index_single_select()
 
-    def get_selected(self) -> AnyNode:
+    def get_selected(self) -> AnyNode | list[AnyNode]:
         """return the current selected option as a tuple: (option, index)
            or as a list of tuples (in case multiselect is True)
         """
@@ -352,7 +352,7 @@ class PickPacker:
 
         screen.refresh()
 
-    def run_loop(self, screen: window) -> AnyNode:
+    def run_loop(self, screen: window) -> AnyNode | list[AnyNode]:
         while True:
             self.draw(screen)
             c: int = screen.getch()
@@ -382,16 +382,16 @@ class PickPacker:
             # Curses failed to initialize color support, eg. when TERM=vt100
             curses.initscr()
 
-    def _start(self, screen: window) -> AnyNode:
+    def _start(self, screen: window) -> AnyNode | list[AnyNode]:
         self.config_curses()
         return self.run_loop(screen)
 
-    def start(self) -> AnyNode:
+    def start(self) -> AnyNode | list[AnyNode]:
         """Starts the interaction with the user"""
         return curses.wrapper(self._start)
 
 
-def pickpack(*args, **kwargs) -> AnyNode:
+def pickpack(*args, **kwargs) -> AnyNode | list[AnyNode]:
     """Construct and start a :class:`PickPacker <PickPacker>`.
 
     Usage::
