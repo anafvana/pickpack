@@ -29,13 +29,13 @@ _T = TypeVar("_T")
 
 class OutputMode(enum.IntEnum):
     """Changes how the selected entry is returned"""
-    NodeIndex = 0
+    nodeindex = 0
     """Returns the selected node and it's index: [(Node('name'), index)]"""
-    NameIndex = 1
+    nameindex = 1
     """Returns the name of the selected node and it's index: [('name', index)]"""
-    NodeOnly = 2
+    nodeonly = 2
     """Returns only the selected node: [Node('name')]"""
-    NameOnly = 3
+    nameonly = 3
     """Returns only the name of the selected node: ['name']"""
 
 
@@ -57,7 +57,7 @@ class PickPacker:
     :param options_map_func: (optional) a mapping function to pass each option through before displaying
     """
 
-    # list is only for users, internally options is always RenderTree (converted in post_init)
+    # list type is only for users, internally options is always RenderTree (converted in post_init)
     options: RenderTree | list[_T]
     title: str | None = None
     root_name: str | None = None
@@ -69,7 +69,8 @@ class PickPacker:
     min_selection_count: int = 0
     singleselect_output_include_children: bool = False
     output_leaves_only: bool = False
-    output_format: OutputMode = OutputMode.NodeIndex
+    # str type should only be for users
+    output_format: OutputMode | str = OutputMode.nodeindex
     # the default is not perfect, but good enough for most cases
     options_map_func: Callable[[_T], Node] | None = lambda o: Node(str(o))
     foreground: int = curses.COLOR_WHITE
@@ -114,8 +115,13 @@ class PickPacker:
         if isinstance(self.options, RenderTree) and self.root_name is not None:
             self.options.node.name = self.root_name
 
+        if isinstance(self.output_format, str):
+            try:
+                self.output_format = OutputMode[self.output_format]
+            except KeyError:
+                raise ValueError('Invalid output_format property. If it is a str, it must be either "nodeindex", "nameindex", "nodeonly", or "nameonly"')
         if not isinstance(self.output_format, OutputMode):
-            raise TypeError('Invalid output_format property type. Must be OutputMode (nodeindex, nameindex, nodeonly, or nameonly)')
+            raise TypeError('Invalid output_format property type. Must be OutputMode or str (nodeindex, nameindex, nodeonly, or nameonly)')
         
         if not isinstance(self.indicator_parentheses_design, tuple) or len(self.indicator_parentheses_design) != 2 or not isinstance(self.indicator_parentheses_design[0], str) or not isinstance(self.indicator_parentheses_design[1], str):
             raise TypeError('Invalid indicator_parentheses_design type: must be tuple[str, str]')
@@ -188,7 +194,7 @@ class PickPacker:
                 self.add_relatives_index()
 
     def get_selected_noindex(self) -> NodeNameOnly:
-        nameonly = self.output_format == OutputMode.NameOnly
+        nameonly = self.output_format == OutputMode.nameonly
         if self.multiselect:
             return_tuples: list[Node] = []
             if self.output_leaves_only:
@@ -270,9 +276,9 @@ class PickPacker:
         """return the current selected option as a tuple: (option, index)
            or as a list of tuples (in case multiselect is True)
         """
-        if self.output_format == OutputMode.NodeIndex or self.output_format == OutputMode.NameIndex:
+        if self.output_format == OutputMode.nodeindex or self.output_format == OutputMode.nameindex:
             return self.get_selected_withindex()
-        elif self.output_format == OutputMode.NameOnly or self.output_format == OutputMode.NodeOnly:
+        elif self.output_format == OutputMode.nameonly or self.output_format == OutputMode.nodeonly:
             return self.get_selected_noindex()
 
     def get_title_lines(self) -> list[str]:
