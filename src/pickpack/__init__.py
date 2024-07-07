@@ -235,7 +235,7 @@ class PickPacker:
         nameonly = bool(self.output_format)
 
         if self.multiselect:
-            return_tuples: list[NodeWithIndex] = []
+            return_tuples: list[tuple[str | Node, int]] = []    
             if self.output_leaves_only:
                 for selected in self.all_selected:
                     node = find_by_index(self.options.node, selected)
