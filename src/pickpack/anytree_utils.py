@@ -54,7 +54,6 @@ def get_leaves_only(node: Node, leaves: list[Node] = None) -> list[Node]:
     if node.children:
         for child in node.children:
             leaves = get_leaves_only(child, leaves)
-    else:
-        if node not in leaves:
-            leaves.append(node)
+    elif node not in leaves:
+        leaves.append(node)
     return leaves

@@ -20,8 +20,8 @@ KEYS_UP = (curses.KEY_UP, ord('k'))
 KEYS_DOWN = (curses.KEY_DOWN, ord('j'))
 KEYS_SELECT = (curses.KEY_RIGHT, ord(' '))
 
-NodeWithIndex: TypeAlias = tuple[str | Node, int] | list[tuple[str | Node, int]]
-NodeNameOnly: TypeAlias = str | Node | list[Node | str]
+NodeWithIndex: TypeAlias = tuple[str | Node, int]
+NodeNameOnly: TypeAlias = str | Node
 AnyNode: TypeAlias = NodeNameOnly | NodeWithIndex
 
 _T = TypeVar("_T")
@@ -80,6 +80,10 @@ class PickPacker:
     custom_handlers: dict[int, Callable[[PickPacker], Any]] = field(init=False, default_factory=dict)
     index: int = field(init=False, default=0)
     scroll_top: int = field(init=False, default=0)
+    
+    @property
+    def name_only(self) -> bool:
+        return self.output_format == OutputMode.nameonly or self.output_format == OutputMode.nameindex
 
     def __post_init__(self):
         # Check for correct number of elements
@@ -192,94 +196,99 @@ class PickPacker:
             else:
                 self.all_selected.append(self.index)
                 self.add_relatives_index()
-
-    def get_selected_noindex(self) -> NodeNameOnly:
-        nameonly = self.output_format == OutputMode.nameonly
-        if self.multiselect:
-            return_tuples: list[Node] = []
-            if self.output_leaves_only:
-                for selected in self.all_selected:
-                    node = find_by_index(self.options.node, selected)
-                    return_tuples.extend([leaf for leaf in get_leaves_only(node) if leaf not in return_tuples])
-            else:
-                for selected in self.all_selected:
-                    if nameonly:
-                        return_tuples.append(find_by_index(self.options.node, selected).name)
-                    else:
-                        return_tuples.append(find_by_index(self.options.node, selected))
-            return return_tuples
-        else:
-            node = find_by_index(self.options.node, self.index)
-            if self.output_leaves_only:
-                if nameonly:
-                    return [leaf.name for leaf in get_leaves_only(node)]
-                else:
-                    return get_leaves_only(node)
-            else:
-                if self.singleselect_output_include_children:
-                    descendants = get_descendants(node)
-                    if nameonly:
-                        return [node.name for node in descendants]
-                    else:
-                        return descendants
-                else:
-                    if nameonly:
-                        return node.name
-                    else:
-                        return node
     
-    def get_selected_withindex(self) -> NodeWithIndex:
-        """return the current selected option as a tuple: (option, index)
-           or as a list of tuples (in case multiselect==True)
-        """
-        nameonly = bool(self.output_format)
-
-        if self.multiselect:
-            return_tuples: list[tuple[str | Node, int]] = []
+    def no_index_multi_select(self) -> list[NodeNameOnly]:
+        nodes: list[NodeNameOnly] = []
+        
+        for selected in self.all_selected:
+            nodes.append(find_by_index(self.options.node, selected))
+        
+        if self.output_leaves_only:
+            nodes = [n for n in nodes if n.children]
+        if self.name_only:
+            nodes = [n.name for n in nodes]
+        
+        return nodes
+    
+    def no_index_single_select(self) -> NodeNameOnly | list[NodeNameOnly]:
+        node: Node = find_by_index(self.options.node, self.index)
+        
+        if self.output_leaves_only or self.singleselect_output_include_children:
             if self.output_leaves_only:
-                for selected in self.all_selected:
-                    node = find_by_index(self.options.node, selected)
-                    if nameonly:
-                        return_tuples.extend([(leaf.name, leaf.index) for leaf in get_leaves_only(node) if (leaf.name, leaf.index) not in return_tuples])
-                    else:
-                        return_tuples.extend([(leaf, leaf.index) for leaf in get_leaves_only(node) if (leaf, leaf.index) not in return_tuples])
-
+                nodes: list[str | Node] = get_leaves_only(node)
             else:
-                if nameonly:
-                    for selected in self.all_selected:
-                        return_tuples.append((find_by_index(self.options.node, selected).name, selected))
-                else:
-                    for selected in self.all_selected:
-                        return_tuples.append((find_by_index(self.options.node, selected), selected))
-            return return_tuples
+                nodes: list[str | Node] = get_descendants(node)
+            
+            if self.name_only:
+                nodes = [n.name for n in nodes]
+            
+            return nodes
+        
+        if self.name_only:
+            node = node.name
+        
+        return node
+    
+    def get_selected_no_index(self) -> NodeNameOnly | list[NodeNameOnly]:
+        if self.multiselect:
+            return self.no_index_multi_select()
         else:
-            node = find_by_index(self.options.node, self.index)
-            if self.singleselect_output_include_children:
-                if self.output_leaves_only:
-                    if nameonly:
-                        return [(leaf.name, leaf.index) for leaf in get_leaves_only(node)]
-                    else:
-                        return [(leaf, leaf.index) for leaf in get_leaves_only(node)]
-                else:
-                    descendants = get_descendants(node)
-                    if nameonly:
-                        return [(node.name, node.index) for node in descendants]
-                    else:
-                        return [(node, node.index) for node in descendants]
+            return self.no_index_single_select()
+    
+    def index_multi_select(self) -> list[NodeWithIndex]:
+        nodes: list[tuple[str | Node, int]] = []
+        
+        if self.output_leaves_only:
+            for selected in self.all_selected:
+                node: Node = find_by_index(self.options.node, selected)
+                nodes.extend([(leaf, leaf.index) for leaf in get_leaves_only(node) if (leaf, leaf.index) not in nodes])
+        else:
+            for selected in self.all_selected:
+                nodes.append((find_by_index(self.options.node, selected), selected))
+            
+        if self.name_only:
+            nodes = [(n[0].name, n[1]) for n in nodes]
+        
+        return nodes
+    
+    def index_single_select(self) -> NodeWithIndex | list[NodeWithIndex]:
+        node: Node = find_by_index(self.options.node, self.index)
+        
+        if self.output_leaves_only or self.singleselect_output_include_children:
+            if self.output_leaves_only:
+                nodes: list[Node] = get_leaves_only(node)
             else:
-                if nameonly:
-                    return node.name, self.index
-                else:
-                    return node, self.index
+                nodes: list[Node] = get_descendants(node)
+            
+            index_nodes: list[tuple[str | Node, int]] = [(n, n.index) for n in nodes]
+            
+            if self.name_only:
+                index_nodes = [(n[0].name, n[1]) for n in index_nodes]
+            
+            return index_nodes
+        
+        if self.name_only:
+            node = node.name
+        
+        return node, self.index
+    
+    def get_selected_with_index(self) -> NodeWithIndex | list[NodeWithIndex]:
+        """return the current selected option as a tuple: (option, index)
+           or as a list of tuples (in case multiselect is True)
+        """
+        if self.multiselect:
+            return self.index_multi_select()
+        else:
+            return self.index_single_select()
 
     def get_selected(self) -> AnyNode:
         """return the current selected option as a tuple: (option, index)
            or as a list of tuples (in case multiselect is True)
         """
         if self.output_format == OutputMode.nodeindex or self.output_format == OutputMode.nameindex:
-            return self.get_selected_withindex()
+            return self.get_selected_with_index()
         elif self.output_format == OutputMode.nameonly or self.output_format == OutputMode.nodeonly:
-            return self.get_selected_noindex()
+            return self.get_selected_no_index()
 
     def get_title_lines(self) -> list[str]:
         if self.title:
