@@ -124,7 +124,7 @@ class PickPacker:
                 self.output_format = OutputMode[self.output_format]
             except KeyError:
                 raise ValueError('Invalid output_format property. If it is a str, it must be either "nodeindex", "nameindex", "nodeonly", or "nameonly"')
-        if not isinstance(self.output_format, OutputMode):
+        elif not isinstance(self.output_format, OutputMode):
             raise TypeError('Invalid output_format property type. Must be OutputMode or str (nodeindex, nameindex, nodeonly, or nameonly)')
         
         if not isinstance(self.indicator_parentheses_design, tuple) or len(self.indicator_parentheses_design) != 2 or not isinstance(self.indicator_parentheses_design[0], str) or not isinstance(self.indicator_parentheses_design[1], str):
