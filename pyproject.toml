@@ -1,23 +1,30 @@
-[tool.poetry]
+[project]
+
 name = "pickpack"
 version = "2.0.0-1"
 description = "Based on wong2's pick, pickpack is a terminal GUI which allows you to pick one or more options from a tree structure"
-authors = ["ga-av <gc-av.dev@pm.me>", "wong2 <wonderfuly@gmail.com>"]
-license = "MIT"
 readme = "README.md"
-repository = "https://github.com/gc-av/pickpack"
-homepage = "https://github.com/gc-av/pickpack"
+license = { file = "LICENSE" }
+authors = [
+    { name = "ga-av", email = "gc-av.dev@pm.me" },
+    { name = "wong2", email = "wonderfuly@gmail.com" },
+]
 keywords = ["terminal", "gui", "pick", "tree"]
+requires-python = ">=3.9"
+
+dependencies = ["anytree>=2.8,<3.0"]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.2.0,<8.0.0"]
+
+[project.urls]
+Homepage = "https://github.com/gc-av/pickpack"
+Repository = "https://github.com/gc-av/pickpack"
 
 [tool.poetry.dependencies]
-python = ">=3.9"
 windows-curses = { version = "^2.2.0", platform = "win32" }
 dataclasses = { version = "^0.8", python = "~3.6" }
-anytree = { version = "^2.8" }
-
-[tool.poetry.group.dev.dependencies]
-pytest = "^7.2.0"
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
+requires = ["poetry-core>=1.5.0"]
 build-backend = "poetry.core.masonry.api"
