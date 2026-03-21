@@ -1,12 +1,12 @@
 [tool.poetry]
 name = "pickpack"
-version = "2.0.0"
+version = "2.0.0-1"
 description = "Based on wong2's pick, pickpack is a terminal GUI which allows you to pick one or more options from a tree structure"
-authors = ["Ana <anafvana@gmail.com>", "wong2 <wonderfuly@gmail.com>"]
+authors = ["ga-av <gc-av.dev@pm.me>", "wong2 <wonderfuly@gmail.com>"]
 license = "MIT"
 readme = "README.md"
-repository = "https://github.com/anafvana/pickpack"
-homepage = "https://github.com/anafvana/pickpack"
+repository = "https://github.com/gc-av/pickpack"
+homepage = "https://github.com/gc-av/pickpack"
 keywords = ["terminal", "gui", "pick", "tree"]
 
 [tool.poetry.dependencies]

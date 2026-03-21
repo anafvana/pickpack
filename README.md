@@ -1,12 +1,12 @@
 # pickpack
 
-[![ci](https://github.com/anafvana/pickpack/actions/workflows/ci.yml/badge.svg)](https://github.com/anafvana/pickpack/actions/workflows/ci.yml)
+[![ci](https://github.com/gc-av/pickpack/actions/workflows/ci.yml/badge.svg)](https://github.com/gc-av/pickpack/actions/workflows/ci.yml)
 [![PyPI version](https://badge.fury.io/py/pickpack.svg)](https://badge.fury.io/py/pickpack)
 [![PyPI](https://img.shields.io/pypi/dm/pickpack)](https://pypi.org/project/pickpack/)
 
 **pickpack** is a small python library based on [wong2's pick](https://github.com/wong2/pick) which allows you to create a curses-based interactive selection tree in the terminal.
 
-![Demo](https://github.com/anafvana/pick/raw/master/example/basic.gif)
+![Demo](https://github.com/gc-av/pick/raw/master/example/basic.gif)
 
 It was made with installation processes in mind, so that a user can select a parent node and get all children elements included. Different configurations allow for different outputs.
 
